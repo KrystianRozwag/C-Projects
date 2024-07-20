@@ -5,3 +5,5 @@
 /todoapp/.vs
 /CurrencyConverter/.vs
 /ZooManager/.vs
+/CurrencyConverter/obj
+/CurrencyConverter/bin
