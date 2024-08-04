@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -17,39 +19,66 @@ using System.Windows.Shapes;
 
 namespace CurrencyConverter
 {
+
     public partial class MainWindow : Window
     {
+        SqlConnection con = new SqlConnection();
+        SqlCommand cmd = new SqlCommand();
+        SqlDataAdapter da = new SqlDataAdapter();
+
+        private int CurrencyId = 0;
+        private double FromAmount = 0;
+        private double ToAmount = 0;
         public MainWindow()
         {
             InitializeComponent();
 
         }
 
+        public void mycon()
+        {
+            String Conn = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            con = new SqlConnection(Conn);
+            con.Open();
+        }
+
         private void BindCurrency()
         {
-            DataTable dtCurrency = new DataTable();
-            dtCurrency.Columns.Add("Text");
-            dtCurrency.Columns.Add("Value");
+            mycon();
+
+            DataTable dt = new DataTable();
+            cmd = new SqlCommand("select Id, CurrencyName from Currency_Master", con);
+            cmd.CommandType = CommandType.Text;
+
+            da = new SqlDataAdapter(cmd);
+
+            da.Fill(dt);
+
+            DataRow newRow = dt.NewRow();
+
+            newRow["Id"] = 0;
+
+            newRow["CurrencyName"] = "--SELECT--";
+
+            dt.Rows.InsertAt(newRow, 0);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                cmbFromCurrency.ItemsSource = dt.DefaultView;
+
+                cmbToCurrency.ItemsSource = dt.DefaultView;
+            }
+            con.Close();
 
 
-            //Add rows in Datatable with text and value
-            dtCurrency.Rows.Add("--SELECT--", 0);
-            dtCurrency.Rows.Add("INR", 1);
-            dtCurrency.Rows.Add("USD", 75);
-            dtCurrency.Rows.Add("EUR", 85);
-            dtCurrency.Rows.Add("SAR", 20);
-            dtCurrency.Rows.Add("POUND", 5);
-            dtCurrency.Rows.Add("DEM", 43);
-
-            cmbFromCurrency.ItemsSource = dtCurrency.DefaultView;
             cmbFromCurrency.SelectedIndex = 0;
-            cmbFromCurrency.DisplayMemberPath = "Text";
-            cmbFromCurrency.SelectedValuePath = "Value";
+            cmbFromCurrency.DisplayMemberPath = "CurrencyName";
+            cmbFromCurrency.SelectedValuePath = "Id";
 
-            cmbToCurrency.ItemsSource = dtCurrency.DefaultView;
+
             cmbToCurrency.SelectedIndex = 0;
-            cmbToCurrency.DisplayMemberPath = "Text";
-            cmbToCurrency.SelectedValuePath = "Value";
+            cmbToCurrency.DisplayMemberPath = "CurrencyName";
+            cmbToCurrency.SelectedValuePath = "Id";
         }
 
         private void Clear_Click(object sender, RoutedEventArgs e)
@@ -113,5 +142,20 @@ namespace CurrencyConverter
             lblCurrency.Content = "";
             txtCurrency.Focus();
         }
+
+        private void btnSave_Click(object sender, RoutedEventArgs e)
+        {
+
         }
+
+        private void btnCancel_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void dgvCurrency_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
+        {
+
+        }
+    }
 }
